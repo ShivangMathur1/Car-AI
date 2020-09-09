@@ -16,10 +16,10 @@ class Boundary:
         self.a = pointA
         self.b = pointB
 
-    def show(self, color=None):
+    def show(self, surface, color=None):
         if color is None:
             color = [255, 255, 255]
-        pygame.draw.line(screen, color, self.a, self.b)
+        pygame.draw.line(surface, color, self.a, self.b)
 
 
 class Ray:
@@ -32,10 +32,10 @@ class Ray:
         self.dir = newDir - self.pos
         self.dir.scale_to_length(20)
 
-    def show(self, color=None):
+    def show(self, surface, color=None):
         if color is None:
             color = [255, 255, 255]
-        pygame.draw.line(screen, color, self.pos, self.pos + self.dir)
+        pygame.draw.line(surface, color, self.pos, self.pos + self.dir)
 
     def raycast(self, wall):
         x1 = wall.a.x
@@ -65,20 +65,21 @@ class Ray:
 
 
 class Particle:
-    def __init__(self, position, rayCount=8, color=None):
+    def __init__(self, position, angle=0, rayCount=8, color=None):
         if color is None:
             color = [255, 255, 255]
         self.pos = position
+        self.angle = angle
         self.color = color
         self.rays = []
         self.step = 360//rayCount
         for i in range(0, 360, self.step):
             self.rays.append(Ray(self.pos, 20 * Vector2(cos(radians(i)), sin(radians(i)))))
 
-    def show(self):
-        pygame.draw.circle(screen, self.color, (int(self.pos.x), int(self.pos.y)), 4)
+    def show(self, surface):
+        pygame.draw.circle(surface, self.color, (int(self.pos.x), int(self.pos.y)), 4)
 
-    def see(self, walls):
+    def see(self, surface, walls):
 
         for ray in self.rays:
             dmin = 1000000000
@@ -91,8 +92,8 @@ class Particle:
 
             if pt is not None:
                 print(pt)
-                pygame.draw.circle(screen, self.color, [int(pt.x), int(pt.y)], 4)
-                pygame.draw.line(screen, self.color, self.pos, pt)
+                pygame.draw.circle(surface, self.color, [int(pt.x), int(pt.y)], 4)
+                pygame.draw.line(surface, self.color, self.pos, pt)
 
     def move(self, pos):
         self.pos = pos
