@@ -9,10 +9,10 @@ class Game:
     def __init__(self):
         # pygame initialisations
         pygame.init()
-        pygame.mixer.init()
+        #pygame.mixer.init()
         pygame.key.set_repeat(20, 20)
-        pygame.mixer.music.load("dejavu.mp3")
-        pygame.mixer.music.play(-1)
+        #pygame.mixer.music.load("dejavu.mp3")
+        #pygame.mixer.music.play(-1)
 
         self.run = True
         self.width = 966
@@ -27,9 +27,13 @@ class Game:
         self.walls.append(Boundary(Vector2(0, 0), Vector2(0, self.height)))
         self.walls.append(Boundary(Vector2(0, 0), Vector2(self.width, 0)))
         self.walls.append(Boundary(Vector2(0, self.height), Vector2(self.width, self.height)))
-        self.walls.append(Boundary(Vector2(), Vector2()))
-        self.walls.append(Boundary(Vector2(), Vector2()))
 
+        #track
+        last = [20, 20, 90, 70]
+        for i in [[850, 20, 800, 70], [950, 100, 870, 130], [950, 700, 870, 670], [900, 750, 830, 700], [100, 750, 150, 700], [20, 700, 100, 650], [20, 20, 90, 70]]:
+            self.walls.append(Boundary(Vector2(last[0], last[1]), Vector2(i[0], i[1])))
+            self.walls.append(Boundary(Vector2(last[2], last[3]), Vector2(i[2], i[3])))
+            last = i
 
     def step(self, dt):
         for event in pygame.event.get():
