@@ -5,7 +5,7 @@ from math import cos, sin, radians
 from random import randint
 
 # pygame.init()
-#
+
 # width = 1000
 # height = 500
 # screen = pygame.display.set_mode([width, height])
@@ -91,16 +91,21 @@ class Particle:
                     pt = p
 
             if pt is not None:
-                print(pt)
                 pygame.draw.circle(surface, self.color, [int(pt.x), int(pt.y)], 4)
                 pygame.draw.line(surface, self.color, self.pos, pt)
 
-    def move(self, pos):
+    def move(self, pos=None, angle=None):
+        if pos == None:
+            pos = self.pos
+        if angle == None:
+            angle = self.angle
+
         self.pos = pos
         for i in self.rays:
             i.pos = self.pos
-
-#
+        self.angle = angle
+        for i in range(0, 360, self.step):
+            self.rays[i//self.step].dir = Vector2(cos(radians(i - angle)), sin(radians(i - angle)))
 # # Objects
 # walls = []
 # for i in range(5):
@@ -109,13 +114,13 @@ class Particle:
 #     x2 = randint(0, width)
 #     y2 = randint(0, height)
 #     walls.append(Boundary(Vector2(x1, y1), Vector2(x2, y2)))
-#
-#
+
+
 # walls.append(Boundary(Vector2(width, 0), Vector2(width, height)))
 # walls.append(Boundary(Vector2(0, 0), Vector2(0, height)))
 # walls.append(Boundary(Vector2(0, 0), Vector2(width, 0)))
 # walls.append(Boundary(Vector2(0, height), Vector2(width, height)))
-#
+
 # p = Particle(Vector2((250, 250)))
 
 # # Event Loop------------------------------------------------------------------------------------------------------------
@@ -125,16 +130,16 @@ class Particle:
 #             pygame.quit()
 #             sys.exit()
 #         if event.type == pygame.MOUSEMOTION:
-#             p.move(Vector2(pygame.mouse.get_pos()))
+#             p.move(pos=Vector2(pygame.mouse.get_pos()))
 #         if event.type == pygame.KEYDOWN:
 #             keys = pygame.key.get_pressed()
 #             if keys[pygame.K_RIGHT]:
-#                 pass
-#
+#                 p.move(angle=30)
+
 #     screen.fill([0, 0, 0])
 #     for i in walls:
-#         i.show()
-#     p.show()
-#     p.see(walls)
-#
+#         i.show(screen)
+#     p.show(screen)
+#     p.see(screen, walls)
+
 #     pygame.display.flip()

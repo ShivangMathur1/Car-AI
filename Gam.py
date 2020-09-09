@@ -27,6 +27,9 @@ class Game:
         self.walls.append(Boundary(Vector2(0, 0), Vector2(0, self.height)))
         self.walls.append(Boundary(Vector2(0, 0), Vector2(self.width, 0)))
         self.walls.append(Boundary(Vector2(0, self.height), Vector2(self.width, self.height)))
+        self.walls.append(Boundary(Vector2(), Vector2()))
+        self.walls.append(Boundary(Vector2(), Vector2()))
+
 
     def step(self, dt):
         for event in pygame.event.get():
@@ -111,7 +114,7 @@ class Car(pygame.sprite.Sprite):
 
         self.pos += self.velocity.rotate(-self.angle) * dt
         self.angle += degrees(angularVelocity) * dt
-        self.particle.move(self.pos)
+        self.particle.move(self.pos, self.angle)
 
     def display(self, surface, walls):
         self.rotated = pygame.transform.rotate(self.image, self.angle)
