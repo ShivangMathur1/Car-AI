@@ -2,7 +2,7 @@ import pygame
 from math import sin, radians, degrees, copysign
 from pygame.math import Vector2
 import sys
-from Data.Raycast import Boundary, Particle
+from Raycast import Boundary, Particle
 
 
 class Game:
