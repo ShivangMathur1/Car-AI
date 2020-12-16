@@ -2,7 +2,6 @@ import pygame
 from pygame import Vector2
 import sys
 from math import cos, sin, radians
-from random import randint
 
 # pygame.init()
 
@@ -106,7 +105,7 @@ class Particle:
         self.angle = angle
         for i in range(0, 360, self.step):
             self.rays[i//self.step].dir = Vector2(cos(radians(i - angle)), sin(radians(i - angle)))
-# # Objects
+if __name__ == '__main__':
 # walls = []
 # for i in range(5):
 #     x1 = randint(0, width)

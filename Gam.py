@@ -1,7 +1,8 @@
-import pygame
-from math import sin, radians, degrees, copysign
-from pygame.math import Vector2
 import sys
+from math import copysign, degrees, radians, sin
+import pygame
+from pygame.math import Vector2
+
 from Raycast import Boundary, Particle
 
 
