@@ -7,7 +7,7 @@ from Raycast import Boundary, Particle
 
 
 class Game:
-    def __init__(self):
+    def __init__(self, map):
         # pygame initialisations
         pygame.init()
         #pygame.mixer.init()
@@ -15,14 +15,15 @@ class Game:
         #pygame.mixer.music.load("dejavu.mp3")
         #pygame.mixer.music.play(-1)
 
-        self.run = True
+        self.done = False
+        self.wallGroup = pygame.sprite.Group()
         self.width = 966
         self.height = 768
         self.screen = pygame.display.set_mode([self.width, self.height])
         self.screen.fill([0, 0, 0])
 
         # Objects
-        self.car = Car([30, 30], "car.png", 0)
+        self.car = Car([40, 40], "car.png", 0)
         self.walls = []
         self.walls.append(Boundary(Vector2(self.width, 0), Vector2(self.width, self.height)))
         self.walls.append(Boundary(Vector2(0, 0), Vector2(0, self.height)))
@@ -31,15 +32,16 @@ class Game:
 
         #track
         last = [20, 20, 90, 70]
-        for i in [[850, 20, 800, 70], [950, 100, 870, 130], [950, 700, 870, 670], [900, 750, 830, 700], [100, 750, 150, 700], [20, 700, 100, 650], [20, 20, 90, 70]]:
+        for i in map:
             self.walls.append(Boundary(Vector2(last[0], last[1]), Vector2(i[0], i[1])))
             self.walls.append(Boundary(Vector2(last[2], last[3]), Vector2(i[2], i[3])))
             last = i
+        self.wallGroup = pygame.sprite.Group(*self.walls)
 
     def step(self, dt):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                self.run = False
+                self.done = True
         
         # Keypresses
         keys = pygame.key.get_pressed()
@@ -83,6 +85,23 @@ class Game:
         self.car.display(self.screen,self.walls)
         pygame.display.flip()
 
+        # Determine the state of the environment
+        state = self.car.particle.see(self.screen, self.walls, render=False)
+
+        # Check for collisions and give rewards
+        reward = 0
+        if len(pygame.sprite.spritecollide(self.car, self.wallGroup, dokill=False)) > 0:
+            self.done = True
+            reward = -10
+
+        return state, reward, self.done
+    
+    def reset(self):
+        self.done = False
+        self.car.reset()
+        state = self.car.particle.see(self.screen, self.walls, render=False)
+        return state
+
 
 class Car(pygame.sprite.Sprite):
     def __init__(self, pos, image, angle=0.0):
@@ -95,17 +114,26 @@ class Car(pygame.sprite.Sprite):
         self.pos = Vector2(pos[0], pos[1])
         self.velocity = Vector2(0.0, 0.0)
         self.angle = angle
-        self.length = 4
         self.acceleration = 0.0
         self.steering = 0.0
 
+        self.startPos = Vector2(pos[0], pos[1])
+        self.startAngle = angle
+        self.length = 4
         self.maxVelocity = 320
         self.decel = 320
         self.freeDecel = 80
         self.maxAccel = 160
         self.maxSteer = 4
-
         self.particle = Particle(self.pos)
+
+    def reset(self):
+        self.rect = self.rotated.get_rect()
+        self.pos = self.startPos
+        self.velocity = Vector2(0.0, 0.0)
+        self.angle = self.startAngle
+        self.acceleration = 0.0
+        self.steering = 0.0
 
     def update(self, dt):
         self.velocity += (self.acceleration * dt, 0)
@@ -124,15 +152,13 @@ class Car(pygame.sprite.Sprite):
     def display(self, surface, walls):
         self.rotated = pygame.transform.rotate(self.image, self.angle)
         self.rect = self.rotated.get_rect()
-        self.particle.see(surface, walls)
         surface.blit(self.rotated, self.pos - (self.rect.width / 2, self.rect.height / 2))
 
 
 if __name__ == "__main__":
     clock = pygame.time.Clock()
-    game = Game()
-
-    while game.run == True:
+    game = Game([[850, 20, 800, 70], [950, 100, 870, 130], [950, 700, 870, 670], [900, 750, 830, 700], [100, 750, 150, 700], [20, 700, 100, 650], [20, 20, 90, 70]])
+    while not game.done:
         dt = clock.get_time() / 1000
         game.step(dt)
         pygame.time.delay(40)
