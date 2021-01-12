@@ -6,16 +6,14 @@ from random import randint
 
 
 class Boundary(pygame.sprite.Sprite):
-    def __init__(self, pointA, pointB):
+    def __init__(self, pointA, pointB, surface, color=None):
         pygame.sprite.Sprite.__init__(self) 
         self.a = pointA
         self.b = pointB
-        self.rect = pygame.Rect(self.a, self.b)
-
-    def show(self, surface, color=None):
+        self.surface = surface
         if color is None:
             color = [255, 255, 255]
-        pygame.draw.line(surface, color, self.a, self.b)
+        pygame.draw.line(self.surface, color, self.a, self.b)
 
 
 class Ray:
