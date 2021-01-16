@@ -58,7 +58,7 @@ class Ray:
             return None, None
 
 
-class Particle:
+class RayParticle:
     def __init__(self, position, angle=0, rayCount=8, color=None):
         if color is None:
             color = [255, 255, 255]
@@ -111,6 +111,7 @@ if __name__ == '__main__':
     width = 1000
     height = 500
     screen = pygame.display.set_mode([width, height])
+    wallSurf = pygame.Surface([width, height], pygame.SRCALPHA)
 
     walls = []
     for i in range(5):
@@ -118,15 +119,15 @@ if __name__ == '__main__':
         y1 = randint(0, height)
         x2 = randint(0, width)
         y2 = randint(0, height)
-        walls.append(Boundary(Vector2(x1, y1), Vector2(x2, y2)))
+        walls.append(Boundary(Vector2(x1, y1), Vector2(x2, y2), wallSurf))
 
 
-    walls.append(Boundary(Vector2(width, 0), Vector2(width, height)))
-    walls.append(Boundary(Vector2(0, 0), Vector2(0, height)))
-    walls.append(Boundary(Vector2(0, 0), Vector2(width, 0)))
-    walls.append(Boundary(Vector2(0, height), Vector2(width, height)))
+    walls.append(Boundary(Vector2(width, 0), Vector2(width, height), wallSurf))
+    walls.append(Boundary(Vector2(0, 0), Vector2(0, height), wallSurf))
+    walls.append(Boundary(Vector2(0, 0), Vector2(width, 0), wallSurf))
+    walls.append(Boundary(Vector2(0, height), Vector2(width, height), wallSurf))
 
-    p = Particle(Vector2((250, 250)))
+    p = RayParticle(Vector2((250, 250)))
 
     # Event Loop------------------------------------------------------------------------------------------------------------
     while True:
@@ -143,7 +144,7 @@ if __name__ == '__main__':
 
         screen.fill([0, 0, 0])
         for i in walls:
-            i.show(screen)
+            screen.blit(wallSurf, (0, 0))
         p.show(screen)
         d = p.see(screen, walls, render=True)
         print(d)
