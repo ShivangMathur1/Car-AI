@@ -4,10 +4,6 @@ import pygame
 from pygame.math import Vector2
 from Raycast import Boundary, RayParticle
 
-# To-do:
-# Action encoding: pass action no. instead of one-hot
-# Parameter tuning
-
 
 # The layout of the environment
 MAP = [[[20, 20], [130, 20], [180, 20], [240, 20], [300, 20], [400, 20], [700, 20], [850, 20], [950, 100], [950, 700], [900, 750], [100, 750], [20, 700], [20, 20]],
@@ -40,14 +36,14 @@ class Game:
             self.tracks.append(Track(map[1:], map[0], self.height, self.width, self.walls))
         
     # Update at each time delta (and not frame)
-    def step(self, dt, actions):
+    def step(self, dt, action):
         # Need to have this code for pygame to work
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 print("No messing with the environment or all your weights will be re-initialised to -420 ಠ_ಠ")
 
         # Update
-        self.car.update(dt, actions)
+        self.car.update(dt, action)
         self.screen.fill([0, 0, 0])
         
 
@@ -115,33 +111,22 @@ class Car(pygame.sprite.Sprite):
         self.rayCaster = RayParticle(self.pos)
 
     # Move the car one time delta's worth
-    def update(self, dt, actions):
-        # Actions: [[Forward], [Backward], [Right], [Left], [Brake],[Forward, Left], [Forward, Right], [Backward, Left], [Backward, Right], [Brake, Left], [Brake, Right]]
-        
-        # if keys[pygame.K_UP]:
-        #     actions[0] = 1
-        # elif keys[pygame.K_DOWN]:
-        #     actions[0] = -1
-        # elif keys[pygame.K_SPACE]:
-        #     actions[1] = 1
-        # if keys[pygame.K_RIGHT]:
-        #     actions[2] = 1
-        # elif keys[pygame.K_LEFT]:
-        #     actions[2] = -1
-
+    def update(self, dt, action):
+        # Actions: [[0, Idle], [1, Forward], [2, Backward], [3, Left], [4, Right], [5, Brake],[6, Forward, Left],
+        # [7, Forward, Right], [8, Backward, Left], [9, Backward, Right], [10, Brake, Left], [11, Brake, Right]]
         # Perform actions and determine variables
-        self.actions = actions
-        if actions[0] == 1:
+        self.action = action
+        if self.action in [1, 6, 7]:        # Forward
             if self.velocity.x < 0:
                 self.acceleration = self.decel
             else:
                 self.acceleration = self.maxAccel
-        elif actions[0] == -1:
+        elif self.action in [2, 8, 9]:       # Backward
             if self.velocity.x > 0:
                 self.acceleration = -self.decel
             else:
                 self.acceleration = -self.maxAccel
-        elif actions[1] == 1:
+        elif self.action in [5, 10, 11]:     # Brakes
             if self.velocity.x != 0:
                 self.acceleration = copysign(self.maxAccel, -self.velocity.x)
         else:
@@ -150,12 +135,12 @@ class Car(pygame.sprite.Sprite):
             else:
                 if dt != 0:
                     self.acceleration = -self.velocity.x / dt
-        self.acceleration = max(-self.maxAccel, min(self.acceleration, self.maxAccel))
+        #self.acceleration = max(-self.maxAccel, min(self.acceleration, self.maxAccel))
 
-        if actions[2] == 1:
-            self.steering -= 30 * dt
-        elif actions[2] == -1:
+        if self.action in [3, 6, 8]:        # Left
             self.steering += 30 * dt
+        elif self.action in [4, 7, 9]:      # Right
+            self.steering -= 30 * dt
         else:
             self.steering = 0
         self.steering = max(-self.maxSteer, min(self.steering, self.maxSteer))
@@ -263,24 +248,38 @@ if __name__ == "__main__":
     clock = pygame.time.Clock()
     game = Game()
     while not game.done:
-        actions = [0, 0, 0]
+        # Actions: [[0, Idle], [1, Forward], [2, Backward], [3, Left], [4, Right], [5, Brake],[6, Forward, Left], [7, Forward, Right], [8, Backward, Left], [9, Backward, Right], [10, Brake, Left], [11, Brake, Right]]
         
-        # Keypresses
+        # The keypresses dictionary
         keys = pygame.key.get_pressed()
-
+        action = 0
         if keys[pygame.K_UP]:
-            actions[0] = 1
+            action = 1
+            if keys[pygame.K_LEFT]:
+                action = 6
+            elif  keys[pygame.K_RIGHT]:
+                action = 7
+        
         elif keys[pygame.K_DOWN]:
-            actions[0] = -1
+            action = 2
+            if keys[pygame.K_LEFT]:
+                action = 8
+            elif  keys[pygame.K_RIGHT]:
+                action = 9
         elif keys[pygame.K_SPACE]:
-            actions[1] = 1
-        if keys[pygame.K_RIGHT]:
-            actions[2] = 1
-        elif keys[pygame.K_LEFT]:
-            actions[2] = -1
+            action = 5
+            if keys[pygame.K_LEFT]:
+                action = 10
+            elif  keys[pygame.K_RIGHT]:
+                action = 11
+        else:
+            if keys[pygame.K_LEFT]:
+                    action = 3
+            elif  keys[pygame.K_RIGHT]:
+                    action = 4
 
         dt = clock.get_time() / 1000
-        state, reward, done = game.step(dt, actions)
+        state, reward, done = game.step(dt, action)
         game.render()
         pygame.time.delay(40)
         clock.tick(60)
