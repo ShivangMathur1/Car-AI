@@ -4,10 +4,11 @@ import pygame
 from pygame.math import Vector2
 from Raycast import Boundary, RayParticle
 
+# Add done if long time no reward
 
 # The layout of the environment
-MAP = [[[20, 20], [130, 20], [180, 20], [240, 20], [300, 20], [400, 20], [700, 20], [850, 20], [950, 100], [950, 700], [900, 750], [100, 750], [20, 700], [20, 20]],
-       [[90, 70], [130, 70], [180, 70], [240, 70], [300, 70], [400, 70], [700, 70], [800, 70], [870, 130], [870, 670], [830, 700], [150, 700], [100, 650], [90, 70]]]
+MAP = [[[20, 20], [120, 20], [180, 20], [240, 20], [300, 20], [400, 20], [700, 20], [850, 20], [950, 100], [950, 700], [900, 750], [100, 750], [20, 700], [20, 20]],
+       [[90, 70], [120, 70], [180, 70], [240, 70], [300, 70], [400, 70], [700, 70], [800, 70], [870, 130], [870, 670], [830, 700], [150, 700], [100, 650], [90, 70]]]
 
 # Environment class: For all your training needs
 class Game:
@@ -19,7 +20,8 @@ class Game:
         self.done = False
         self.state = None
         self.reward = 0
-
+        self.nActions = 13
+        self.nInputs = 8
 
         # The screen, if you decide to render the environment
         self.width = 966
@@ -36,7 +38,7 @@ class Game:
             self.tracks.append(Track(map[1:], map[0], self.height, self.width, self.walls))
         
     # Update at each time delta (and not frame)
-    def step(self, dt, action):
+    def step(self, action, dt=0.015):
         # Need to have this code for pygame to work
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -54,10 +56,10 @@ class Game:
         self.reward = 0
         if pygame.sprite.collide_mask(self.tracks[0], self.car) is not None or pygame.sprite.collide_mask(self.tracks[1], self.car) is not None:
             self.done = True
-            self.reward = -10
+            self.reward = -50
         collided, done = self.gates.collide(self.car)
         if collided:
-            self.reward = 20
+            self.reward = 50
             if done:
                 self.reward += 100
                 self.done = True
@@ -279,8 +281,10 @@ if __name__ == "__main__":
                     action = 4
 
         dt = clock.get_time() / 1000
-        state, reward, done = game.step(dt, action)
+        state, reward, done = game.step(action, dt)
+        print(dt)
         game.render()
-        pygame.time.delay(40)
+        # pygame.time.delay(20)
         clock.tick(60)
+
     game.close()
